@@ -103,7 +103,23 @@
                  :group 'comingle)
              ,@funcdefform)))
 
-(comingle-def comingle-delay 0.100)
+(comingle-def
+ comingle-delay
+ 0.100
+ "General comingle timer delay, NOT related to `comingle-auto-complete-delay' or `comingle-auto-complete'.
+
+More used internally for control flow.")
+
+(comingle-def
+ comingle-auto-complete
+ t
+ "Completion automatically shows after `comingle-auto-complete-delay' if t.")
+
+(comingle-def
+ comingle-auto-complete-delay
+ 0.500
+ "Delay in seconds before the comingle auto completion is displayed, if
+`comingle-auto-complete' is t.")
 
 (comingle-def comingle-directory (_api state) (comingle-state-manager-directory state))
 (comingle-def comingle-port (_api state) (comingle-state-port state))
@@ -614,7 +630,8 @@ If you set `comingle-port', it will be used instead and no process will be creat
         (if (input-pending-p)
             (run-with-idle-timer 0.005 nil #'comingle-defer-until-no-input state tracker func args)
             (with-local-quit
-                (apply func args)))))
+              (apply func args)))))
+
 (defun comingle-run-with-timer (state secs func &rest args)
     (unless (comingle-state-alive-tracker state)
         (error "comingle-state is not alive! %s" state))
@@ -1350,10 +1367,15 @@ If `comingle-api-enabled' returns nil, does nothing.
 
 (defun comingle-post-command-hook ()
   "Hook for `post-command-hook` to trigger completions."
-  (when (and (not (minibufferp))
+  (when (and comingle-auto-complete
+             (not (minibufferp))
              (member this-command '(self-insert-command newline)))
-    (unless (and comingle-overlay (overlay-buffer comingle-overlay))
-      (run-with-idle-timer 0.5 nil #'comingle-get-completion))))
+    (unless (and comingle-overlay
+                 (overlay-buffer comingle-overlay))
+      (comingle-run-with-timer
+       comingle-state
+       (comingle-get-config 'comingle-auto-complete-delay nil comingle-state)
+       #'comingle-get-completion))))
 
 (defun comingle-pre-command-hook ()
   "Hook for `pre-command-hook` to clear completions."
