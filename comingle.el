@@ -1009,13 +1009,7 @@ If `comingle-api-enabled' returns nil, does nothing.
            "&spen_file_pointer_enabled=true"
            "&diff_view_enabled=true"
            "&locale=en_US"))
-    (start-process "comingle chat" nil
-                  (pcase system-type
-                      ('windows-nt "start")
-                      ('gnu/linux "xdg-open")
-                      ('darwin "open")
-                      (_ (error "unable to automatically determine your system, or your system is not supported yet. Please file an issue on github.")))
-                  comingle-chat-url)
+    (browse-url comingle-chat-url)
     ;; Add current project directory to chat when started
     ;;  TODO: projectile support?
     (comingle-request-with-body 'AddTrackedWorkspace
