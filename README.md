@@ -10,6 +10,12 @@ Lastly, the local Codeium server version has been updated, since had not been up
 
 Different from original, you must enable `comingle-mode` to start getting completions.  And still need to `comingle-init` prior, in order to get login, etc.
 
+> [!Warning]
+> While using this package, your code is constantly being sent to
+> Windsurf servers by their own language server in order to evaluate and return
+> completions. Before using make sure you have read and accept the [Windsurf
+> Privacy Policy](https://windsurf.com/privacy-policy). You can turn off the full indexing service by disabling chat with `(setopt comingle-chat nil)`, but completions will still send data.
+
 This is my init.el settings for this package that takes care of doing init work, as well as automatically starting `comingle-mode` in `prog-mode-hook` if enabled through `my/comingle-is-enabled` variable:
 
 

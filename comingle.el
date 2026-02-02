@@ -41,7 +41,7 @@
 
 ;;; Code:
 
-(defvar comingle-latest-local-server-version "1.46.3")
+(defvar comingle-latest-local-server-version "1.48.2")
 
 ;; (require 'url-parse)
 (autoload 'url-parse-make-urlobj "url-parse")
@@ -257,6 +257,7 @@ More used internally for control flow.")
     (haskell-mode . 12)
     (terraform-mode . 13)
     (html-mode . 14)
+    (html-ts-mode . 14)
     (sgml-mode . 14)
     (mhtml-mode . 14)
     (java-mode . 16)
@@ -655,12 +656,12 @@ If you set `comingle-port', it will be used instead and no process will be creat
   (interactive)
   (setq state (or state comingle-state))
   (when (comingle-state-alive-tracker state)
-    (unless (yes-or-no-p "comingle is already running! are you sure to comingle-install? ") (user-error "aborted")))
+    (unless (yes-or-no-p "comingle is already running! are you sure to comingle-install? ") (user-error "aborted"))
+    (comingle-reset state))
   (setf (comingle-state-alive-tracker state)
         (gensym (comingle-state-name comingle-state)))
   (let*
-      (
-       (filename (comingle-get-config 'comingle-command-executable nil state))
+      ((filename (comingle-get-config 'comingle-command-executable nil state))
        (url (comingle-get-config 'comingle-download-url nil state)))
     (when (file-exists-p filename)
       (unless (yes-or-no-p (format "%s already exists; overwrite? " filename)) (user-error "aborted")))
