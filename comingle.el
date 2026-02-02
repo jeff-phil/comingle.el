@@ -386,7 +386,7 @@ If you set `comingle-port', it will be used instead and no process will be creat
   ;; these has distinct elements
   (results-table (make-hash-table :test 'eql :weakness nil)) ; results that are ready
   (pending-table (make-hash-table :test 'eql :weakness nil)) ; requestid that we are waiting for
-  )
+  (completion-timer nil :documentation "Holds the active debounce timer"))
 
 (comingle-def comingle-command-executable
               (expand-file-name
@@ -638,15 +638,16 @@ If you set `comingle-port', it will be used instead and no process will be creat
   (unless (numberp secs)
     (if (eq secs 'default)
         (setq secs (comingle-get-config 'comingle-delay nil state))))
-  (run-with-timer secs nil #'comingle-defer-until-no-input
-                  state (comingle-state-alive-tracker state) func args))
-;; (defun comingle-run-with-timer-with-tracker (state tracker secs func &rest args)
-;; 	(when (eq tracker (comingle-state-alive-tracker state))
-;; 		(apply #'comingle-run-with-timer state secs func args)))
+  (let ((old-timer (comingle-state-completion-timer state)))
+    (when (timerp old-timer)
+      (cancel-timer old-timer)))
+  (let ((new-timer
+         (run-with-timer secs nil #'comingle-defer-until-no-input
+                         state (comingle-state-alive-tracker state) func args)))
+    (setf (comingle-state-completion-timer state) new-timer)))
 
 (defun comingle-time-from (start-time)
   (float-time (time-subtract (current-time) start-time)))
-
 
 
 ;;;###autoload
