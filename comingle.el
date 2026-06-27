@@ -212,9 +212,9 @@ More used internally for control flow.")
   (auth-source-pick-first-password :host "codeium.com" :user "apikey"))
 
 (comingle-def comingle/metadata/api_key (_api state)
-              (if-let ((api-key (let ((key (or (comingle-state-last-api-key state)
-                                               (comingle-get-saved-api-key))))
-                                  (when (and key (> (length key) 0)) key))))
+              (if-let* ((api-key (let ((key (or (comingle-state-last-api-key state)
+                                                (comingle-get-saved-api-key))))
+                                   (when (and key (> (length key) 0)) key))))
                   (setq comingle/metadata/api_key api-key)
                 (setq comingle/metadata/api_key
                       (lambda (_api state)
@@ -762,7 +762,7 @@ If you set `comingle-port', it will be used instead and no process will be creat
   "print str on its own line in *comingle-log*, returns a callback function
 that can add to that line."
   (let ((modeline-callback (when mode-line-str (comingle-log-mode-line state mode-line-str mode-line-ttl))))
-    (when-let ((buf (comingle-get-config 'comingle-log-buffer nil state)))
+    (when-let* ((buf (comingle-get-config 'comingle-log-buffer nil state)))
       (with-current-buffer buf
         (let ((inhibit-read-only t)
               time-beg-marker time-end-marker insert-marker
@@ -920,7 +920,7 @@ If `comingle-api-enabled' returns nil, does nothing.
      (not (comingle-get-config 'comingle-directory nil state))
      (not (comingle-state-proc state)))
     (setf (comingle-state-port state) nil)
-    (when-let ((dir (comingle-state-manager-directory state)))
+    (when-let* ((dir (comingle-state-manager-directory state)))
       (delete-directory dir t)
       (setf (comingle-state-manager-directory state) nil))
     (comingle-create-process state)
@@ -951,7 +951,7 @@ If `comingle-api-enabled' returns nil, does nothing.
             (browse-url authurl)
             (comingle-request 'GetAuthToken state nil
                               (lambda (res)
-                                (if-let ((token (and (listp res) (alist-get 'authToken res))))
+                                (if-let* ((token (and (listp res) (alist-get 'authToken res))))
                                     (setf (comingle-state-last-auth-token state) token)
                                   (error "Cannot get auth_token from res"))
                                 (comingle-background-process-schedule state)))
@@ -966,7 +966,7 @@ If `comingle-api-enabled' returns nil, does nothing.
      (not (comingle-get-config 'comingle/metadata/api_key 'GetCompletions state)))
     (comingle-request 'RegisterUser state nil
                       (lambda (res)
-                        (if-let ((key (and (listp res) (alist-get 'api_key res))))
+                        (if-let* ((key (and (listp res) (alist-get 'api_key res))))
                             (progn
                               (when (y-or-n-p "save comingle/metadata/api_key using customize?")
                                 (customize-save-variable 'comingle/metadata/api_key key))
@@ -1026,10 +1026,10 @@ If `comingle-api-enabled' returns nil, does nothing.
   (interactive)
   (setq state (or state comingle-state))
   (setf (comingle-state-alive-tracker state) nil)
-  (when-let ((proc (comingle-state-proc state)))
+  (when-let* ((proc (comingle-state-proc state)))
     (delete-process proc)
     (setf (comingle-state-proc state) nil))
-  (when-let ((dir (comingle-state-manager-directory state)))
+  (when-let* ((dir (comingle-state-manager-directory state)))
     (delete-directory dir t)
     (setf (comingle-state-manager-directory state) nil))
   (setf (comingle-state-port state) nil)
